@@ -38,6 +38,18 @@ Repeat operation with a 5-second interval:
 clang -Wall -v temp_sensor.m -framework IOKit -framework Foundation -o temp_sensor
 ```
 
+## References
+
+For **better names** (e.g. what is `PMU TP3w` ?) for the sensors, please refer to
+
+https://github.com/exelban/stats/blob/master/Modules/Sensors/values.swift
+
+https://github.com/acidanthera/VirtualSMC/blob/master/Docs/SMCSensorKeys.txt
+
+Here is a similar code in swift for getting sensor values using IOKit (for intel Mac)
+
+https://github.com/exelban/stats/blob/master/Modules/Sensors/values.swift
+
 ## License
 BSD 3-Clause License
 
@@ -69,16 +81,5 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-## References
-
-For **better names** (e.g. what is `PMU TP3w` ?) for the sensors, please refer to
-
-https://github.com/exelban/stats/blob/master/Modules/Sensors/values.swift
-
-https://github.com/acidanthera/VirtualSMC/blob/master/Docs/SMCSensorKeys.txt
-
-Here is a similar code in swift for getting sensor values using IOKit (for intel Mac)
-
-https://github.com/exelban/stats/blob/master/Modules/Sensors/values.swift
 
 
