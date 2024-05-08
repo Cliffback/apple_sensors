@@ -298,6 +298,8 @@ int main(int argc, char *argv[]) {
   // Create default values
   NSString *property = nil;
   BOOL calculateAverage = NO;
+  BOOL repeat = NO;
+  int repeatInterval = 0; // in microseconds
 
   // Loop through command-line arguments to determine actions
   for (int i = 1; i < argc; i++) {
@@ -311,6 +313,16 @@ int main(int argc, char *argv[]) {
         printf("Error: Missing argument for -f\n");
         return 1;
       }
+    } else if (strcmp(argv[i], "-r") == 0) {
+      repeat = YES;
+      if (i + 1 < argc) {
+        repeatInterval =
+            atoi(argv[i + 1]) * 1000000; // Convert seconds to microseconds
+        i++;                             // Skip next argument (interval)
+      } else {
+        printf("Error: Missing argument for -r\n");
+        return 1;
+      }
     } else {
       printf("Error: Invalid argument: %s\n", argv[i]);
       return 1;
@@ -322,21 +334,29 @@ int main(int argc, char *argv[]) {
   CFArrayRef thermalNames = getProductNames(thermalSensors);
   CFArrayRef thermalValues = getThermalValues(thermalSensors);
 
-  // Determine action based on arguments
-  if (calculateAverage) {
-    if (property) {
-      calcAverageTempByProperty(thermalNames, thermalValues, property);
+  // Main loop to perform actions
+  do {
+    if (calculateAverage) {
+      if (property) {
+        calcAverageTempByProperty(thermalNames, thermalValues, property);
+      } else {
+        calcAverageTemp(thermalValues);
+      }
+    } else if (property) {
+      dumpSensorDataByProperty(thermalNames, thermalValues, property);
     } else {
-      calcAverageTemp(thermalValues);
+      dumpValues(thermalValues);
     }
-  } else if (property) {
-    dumpSensorDataByProperty(thermalNames, thermalValues, property);
-  } else {
-    dumpNames(thermalNames, "C");
     printf("\n");
     fflush(stdout);
-    dumpValues(thermalValues);
-  }
+    if (repeat) {
+      usleep(repeatInterval);
+    }
+  } while (repeat);
+
+  CFRelease(thermalNames);
+  CFRelease(thermalValues);
+  CFRelease(thermalSensors);
 
   return 0;
 }
