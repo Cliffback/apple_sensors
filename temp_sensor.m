@@ -239,35 +239,107 @@ CFArrayRef filterSensorNamesByProperty(CFArrayRef sensorNames,
   return filteredNames;
 }
 
+void printValuesAsArray(CFArrayRef sensorNames, CFArrayRef sensorValues) {
+  dumpNames(sensorNames, "C");
+  dumpValues(sensorValues);
+}
+
+void printFilteredValuesAsArrays(CFArrayRef sensorNames,
+                                 CFArrayRef sensorValues, NSString *property) {
+  CFArrayRef filteredNames = filterSensorNamesByProperty(sensorNames, property);
+  long count = CFArrayGetCount(filteredNames);
+
+  // Create an array to store filtered values
+  CFMutableArrayRef filteredValues =
+      CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+
+  // Populate the filtered values array with corresponding values for filtered
+  // names
+  for (int i = 0; i < count; i++) {
+    NSString *name = (NSString *)CFArrayGetValueAtIndex(filteredNames, i);
+    CFIndex index = CFArrayGetFirstIndexOfValue(
+        sensorNames, CFRangeMake(0, CFArrayGetCount(sensorNames)),
+        (__bridge const void *)(name));
+    if (index != -1 && index < CFArrayGetCount(sensorValues)) {
+      CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, index);
+      CFArrayAppendValue(filteredValues, value);
+    } else {
+      // Handle error or provide default value if name not found in sensorNames
+      printf("Value not found for %s\n", [name UTF8String]);
+    }
+  }
+
+  // Print the filtered values array using the dumpValues function
+  dumpNames(filteredNames, "C");
+  dumpValues(filteredValues);
+
+  // Release the memory allocated for the filtered values array
+  CFRelease(filteredValues);
+}
+
+void printValues(CFArrayRef sensorNames, CFArrayRef sensorValues) {
+  long count = CFArrayGetCount(sensorNames);
+
+  for (int i = 0; i < count; i++) {
+    NSString *name = (NSString *)CFArrayGetValueAtIndex(sensorNames, i);
+    printf("%s: ", [name UTF8String]);
+
+    CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, i);
+    double temp = 0.0;
+    CFNumberGetValue(value, kCFNumberDoubleType, &temp);
+    printf("%0.1lf\n", temp);
+  }
+}
+
 // Function to filter and dump sensor names and values by a specific property
-void dumpSensorDataByProperty(CFArrayRef sensorNames, CFArrayRef sensorValues,
-                              NSString *property) {
+void printFilteredValues(CFArrayRef sensorNames, CFArrayRef sensorValues,
+                         NSString *property) {
   CFArrayRef filteredNames = filterSensorNamesByProperty(sensorNames, property);
   long count = CFArrayGetCount(filteredNames);
 
   for (int i = 0; i < count; i++) {
     NSString *name = (NSString *)CFArrayGetValueAtIndex(filteredNames, i);
-    printf("%s, ", [name UTF8String]);
+    printf("%s: ", [name UTF8String]);
 
-    CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, i);
-    double temp = 0.0;
-    CFNumberGetValue(value, kCFNumberDoubleType, &temp);
-    printf("%0.1lf, ", temp);
+    // Find the index of the filtered name in the original sensorNames array
+    CFIndex index = CFArrayGetFirstIndexOfValue(
+        sensorNames, CFRangeMake(0, CFArrayGetCount(sensorNames)),
+        (__bridge const void *)(name));
+    if (index != -1 && index < CFArrayGetCount(sensorValues)) {
+      CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, index);
+      double temp = 0.0;
+      CFNumberGetValue(value, kCFNumberDoubleType, &temp);
+      printf("%0.1lf\n", temp);
+    } else {
+      // Handle error or provide default value if name not found in sensorNames
+      printf("Value not found, ");
+    }
   }
 }
 
-void calcAverageTempByProperty(CFArrayRef sensorNames, CFArrayRef sensorValues,
-                               NSString *property) {
+void printFilteredAverageTemp(CFArrayRef sensorNames, CFArrayRef sensorValues,
+                              NSString *property) {
   CFArrayRef filteredNames = filterSensorNamesByProperty(sensorNames, property);
   long count = CFArrayGetCount(filteredNames);
 
   double sum = 0.0; // Variable to store the sum of sensor values
 
   for (int i = 0; i < count; i++) {
-    CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, i);
-    double temp = 0.0;
-    CFNumberGetValue(value, kCFNumberDoubleType, &temp);
-    sum += temp; // Accumulate the sensor values
+    NSString *name = (NSString *)CFArrayGetValueAtIndex(filteredNames, i);
+
+    CFIndex index = CFArrayGetFirstIndexOfValue(
+        sensorNames, CFRangeMake(0, CFArrayGetCount(sensorNames)),
+        (__bridge const void *)(name));
+
+    if (index != -1 && index < CFArrayGetCount(sensorValues)) {
+      CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, index);
+      double temp = 0.0;
+      CFNumberGetValue(value, kCFNumberDoubleType, &temp);
+      sum += temp; // Accumulate the sensor values
+    } else {
+      // Handle error or provide default value if name not found in sensorNames
+      printf("Value not found for %s, ", [name UTF8String]);
+    }
   }
 
   double average = sum / count; // Calculate the average value
@@ -275,7 +347,7 @@ void calcAverageTempByProperty(CFArrayRef sensorNames, CFArrayRef sensorValues,
   printf("Average value of %s: %0.1lf", [property UTF8String], average);
 }
 
-void calcAverageTemp(CFArrayRef sensorValues) {
+void printAverageTemp(CFArrayRef sensorValues) {
   long count = CFArrayGetCount(sensorValues);
 
   double sum = 0.0; // Variable to store the sum of sensor values
@@ -297,6 +369,7 @@ int main(int argc, char *argv[]) {
   NSString *property = nil;
   BOOL calculateAverage = NO;
   BOOL repeat = NO;
+  BOOL printAsArray = NO;
   int repeatInterval = 0; // in microseconds
 
   // Loop through command-line arguments to determine actions
@@ -321,6 +394,9 @@ int main(int argc, char *argv[]) {
         printf("Error: Missing argument for -r\n");
         return 1;
       }
+    } else if (strcmp(argv[i], "-array") ==
+               0) { // New argument for printing as an array
+      printAsArray = YES;
     } else {
       printf("Error: Invalid argument: %s\n", argv[i]);
       return 1;
@@ -333,18 +409,26 @@ int main(int argc, char *argv[]) {
   CFArrayRef thermalValues = getThermalValues(thermalSensors);
 
   // Main loop to perform actions
+  // Main loop to perform actions
   do {
     if (calculateAverage) {
       if (property) {
-        calcAverageTempByProperty(thermalNames, thermalValues, property);
+        printFilteredAverageTemp(thermalNames, thermalValues, property);
       } else {
-        calcAverageTemp(thermalValues);
+        printAverageTemp(thermalValues);
       }
     } else if (property) {
-      dumpSensorDataByProperty(thermalNames, thermalValues, property);
+      if (printAsArray) {
+        printFilteredValuesAsArrays(thermalNames, thermalValues, property);
+      } else {
+        printFilteredValues(thermalNames, thermalValues, property);
+      }
     } else {
-      dumpNames(thermalNames, "C");
-      dumpValues(thermalValues);
+      if (printAsArray) {
+        printValuesAsArray(thermalNames, thermalValues);
+      } else {
+        printValues(thermalNames, thermalValues);
+      }
     }
     printf("\n");
     fflush(stdout);
