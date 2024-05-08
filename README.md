@@ -5,9 +5,10 @@ This code is based on [temp_sensor.m](https://github.com/fermion-star/apple_sens
 The purpose of this tool is to quickly retrieve temperature information on macOS arm64 / Apple Silicone, either for use in other applications. The output can be modified with arguments for specific readings or average temperatures.
 
 ## Usage
-To run the application, use the following command:
+To run the application, either download the binary from [Releases](https://github.com/Cliffback/macos-temp-tool/releases/latest), or compile yourself.
+Run with the following command:
 ```bash
-./application [options]
+./macos-temp-tool [options]
 ```
 ### Options
 - `-a`: Calculate average temperature.
@@ -20,23 +21,23 @@ All arguments can be combined in whatever order.
 ### Example Usage
 Calculate average temperature:
 ```bash
-./application -a
+./macos-temp-tool -a
 ```
 Filter data by property:
 ```bash
-./application -f "PMU tdev"
+./macos-temp-tool -f "PMU tdev"
 ```
 Repeat operation with a 5-second interval:
 
 ```bash
-./application -r 5
+./macos-temp-tool -r 5
 ```
 ## Dependencies
 - Xcode
 
 ## Building from Source
 ```bash
-clang -Wall -v temp_sensor.m -framework IOKit -framework Foundation -o temp_sensor
+clang -Wall -v temp_sensor.m -framework IOKit -framework Foundation -o macos-temp-tool
 ```
 
 ## References
