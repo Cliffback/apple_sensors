@@ -295,38 +295,47 @@ void calcAverageTemp(CFArrayRef sensorValues) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc == 1 || argc == 2 || argc == 3 || argc == 4) {
-    CFDictionaryRef thermalSensors = matching(0xff00, 5);
-    CFArrayRef thermalNames = getProductNames(thermalSensors);
-    CFArrayRef thermalValues = getThermalValues(thermalSensors);
+  // Create default values
+  NSString *property = nil;
+  BOOL calculateAverage = NO;
 
-    if (argc == 2 && strcmp(argv[1], "-a") == 0) {
-      calcAverageTemp(thermalValues);
-    } else if (argc == 3 && strcmp(argv[1], "-f") == 0) {
-      NSString *property = [NSString stringWithUTF8String:argv[2]];
-      dumpSensorDataByProperty(thermalNames, thermalValues, property);
-    } else if (argc == 4 && strcmp(argv[1], "-f") == 0 &&
-               strcmp(argv[3], "-a") == 0) {
-      NSString *property = [NSString stringWithUTF8String:argv[2]];
-      calcAverageTempByProperty(thermalNames, thermalValues, property);
-    } else if (argc == 4 && strcmp(argv[2], "-f") == 0 &&
-               strcmp(argv[1], "-a") == 0) {
-      NSString *property = [NSString stringWithUTF8String:argv[3]];
+  // Loop through command-line arguments to determine actions
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-a") == 0) {
+      calculateAverage = YES;
+    } else if (strcmp(argv[i], "-f") == 0) {
+      if (i + 1 < argc) {
+        property = [NSString stringWithUTF8String:argv[i + 1]];
+        i++; // Skip next argument (property)
+      } else {
+        printf("Error: Missing argument for -f\n");
+        return 1;
+      }
+    } else {
+      printf("Error: Invalid argument: %s\n", argv[i]);
+      return 1;
+    }
+  }
+
+  // Retrieve sensor data
+  CFDictionaryRef thermalSensors = matching(0xff00, 5);
+  CFArrayRef thermalNames = getProductNames(thermalSensors);
+  CFArrayRef thermalValues = getThermalValues(thermalSensors);
+
+  // Determine action based on arguments
+  if (calculateAverage) {
+    if (property) {
       calcAverageTempByProperty(thermalNames, thermalValues, property);
     } else {
-      dumpNames(thermalNames, "C");
-      printf("\n");
-      fflush(stdout);
-      dumpValues(thermalValues);
+      calcAverageTemp(thermalValues);
     }
+  } else if (property) {
+    dumpSensorDataByProperty(thermalNames, thermalValues, property);
   } else {
-    printf("Usage:\n");
-    printf("%s\n", "To print all sensor data: ./program");
-    printf("%s\n", "To print average of all sensor values: ./program -a");
-    printf(
-        "%s\n",
-        "To print sensor data filtered by property: ./program -f <property>");
-    return 1;
+    dumpNames(thermalNames, "C");
+    printf("\n");
+    fflush(stdout);
+    dumpValues(thermalValues);
   }
 
   return 0;
