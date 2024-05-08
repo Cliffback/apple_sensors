@@ -254,8 +254,6 @@ void dumpSensorDataByProperty(CFArrayRef sensorNames, CFArrayRef sensorValues,
     CFNumberGetValue(value, kCFNumberDoubleType, &temp);
     printf("%0.1lf, ", temp);
   }
-
-  printf("\n");
 }
 
 void calcAverageTempByProperty(CFArrayRef sensorNames, CFArrayRef sensorValues,
@@ -274,7 +272,7 @@ void calcAverageTempByProperty(CFArrayRef sensorNames, CFArrayRef sensorValues,
 
   double average = sum / count; // Calculate the average value
 
-  printf("Average value of %s: %0.1lf\n", [property UTF8String], average);
+  printf("Average value of %s: %0.1lf", [property UTF8String], average);
 }
 
 void calcAverageTemp(CFArrayRef sensorValues) {
@@ -291,7 +289,7 @@ void calcAverageTemp(CFArrayRef sensorValues) {
 
   double average = sum / count; // Calculate the average value
 
-  printf("Average value: %0.1lf\n", average);
+  printf("Average value: %0.1lf", average);
 }
 
 int main(int argc, char *argv[]) {
