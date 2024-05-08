@@ -236,7 +236,13 @@ CFArrayRef filterSensorNamesByProperty(CFArrayRef sensorNames,
     }
   }
 
-  return filteredNames;
+  // Return a non-mutable copy to adhere to memory management conventions
+  CFArrayRef immutableFilteredNames =
+      CFArrayCreateCopy(kCFAllocatorDefault, filteredNames);
+
+  // Release the memory allocated for filteredNames
+  CFRelease(filteredNames);
+  return immutableFilteredNames;
 }
 
 void printValuesAsArray(CFArrayRef sensorNames, CFArrayRef sensorValues) {
@@ -275,6 +281,9 @@ void printFilteredValuesAsArrays(CFArrayRef sensorNames,
 
   // Release the memory allocated for the filtered values array
   CFRelease(filteredValues);
+
+  // Release the memory allocated for filteredNames
+  CFRelease(filteredNames);
 }
 
 void printValues(CFArrayRef sensorNames, CFArrayRef sensorValues) {
@@ -315,6 +324,9 @@ void printFilteredValues(CFArrayRef sensorNames, CFArrayRef sensorValues,
       printf("Value not found, ");
     }
   }
+
+  // Release the memory allocated for filteredNames
+  CFRelease(filteredNames);
 }
 
 void printFilteredAverageTemp(CFArrayRef sensorNames, CFArrayRef sensorValues,
@@ -345,6 +357,9 @@ void printFilteredAverageTemp(CFArrayRef sensorNames, CFArrayRef sensorValues,
   double average = sum / count; // Calculate the average value
 
   printf("Average value of %s: %0.1lf", [property UTF8String], average);
+
+  // Release the memory allocated for filteredNames
+  CFRelease(filteredNames);
 }
 
 void printAverageTemp(CFArrayRef sensorValues) {
@@ -408,7 +423,12 @@ int main(int argc, char *argv[]) {
   CFArrayRef thermalNames = getProductNames(thermalSensors);
   CFArrayRef thermalValues = getThermalValues(thermalSensors);
 
-  // Main loop to perform actions
+  // Check if -array is used with -a, show warning if so
+  if (calculateAverage && printAsArray) {
+    printf("Error: -array cannot be used together with -a\n");
+    return 1;
+  }
+
   // Main loop to perform actions
   do {
     if (calculateAverage) {
@@ -437,6 +457,8 @@ int main(int argc, char *argv[]) {
     }
   } while (repeat);
 
+  // Release the memory allocated for thermalNames, thermalValues, and
+  // thermalSensors
   CFRelease(thermalNames);
   CFRelease(thermalValues);
   CFRelease(thermalSensors);
