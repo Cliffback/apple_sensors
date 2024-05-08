@@ -345,6 +345,7 @@ int main(int argc, char *argv[]) {
     } else if (property) {
       dumpSensorDataByProperty(thermalNames, thermalValues, property);
     } else {
+      dumpNames(thermalNames, "C");
       dumpValues(thermalValues);
     }
     printf("\n");
