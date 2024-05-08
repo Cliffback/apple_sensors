@@ -295,35 +295,23 @@ void calcAverageTemp(CFArrayRef sensorValues) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc == 1 || (argc == 2) || (argc == 3) || (argc == 4)) {
-    // Print all sensor data or average of all values
+  if (argc == 1 || argc == 2 || argc == 3 || argc == 4) {
     CFDictionaryRef thermalSensors = matching(0xff00, 5);
     CFArrayRef thermalNames = getProductNames(thermalSensors);
     CFArrayRef thermalValues = getThermalValues(thermalSensors);
+
     if (argc == 2 && strcmp(argv[1], "-a") == 0) {
       calcAverageTemp(thermalValues);
     } else if (argc == 3 && strcmp(argv[1], "-f") == 0) {
       NSString *property = [NSString stringWithUTF8String:argv[2]];
-      // Create a dictionary reference for thermal sensors
-      CFDictionaryRef thermalSensors = matching(0xff00, 5);
-      CFArrayRef thermalNames = getProductNames(thermalSensors);
-      CFArrayRef thermalValues = getThermalValues(thermalSensors);
       dumpSensorDataByProperty(thermalNames, thermalValues, property);
     } else if (argc == 4 && strcmp(argv[1], "-f") == 0 &&
                strcmp(argv[3], "-a") == 0) {
       NSString *property = [NSString stringWithUTF8String:argv[2]];
-      // Create a dictionary reference for thermal sensors
-      CFDictionaryRef thermalSensors = matching(0xff00, 5);
-      CFArrayRef thermalNames = getProductNames(thermalSensors);
-      CFArrayRef thermalValues = getThermalValues(thermalSensors);
       calcAverageTempByProperty(thermalNames, thermalValues, property);
     } else if (argc == 4 && strcmp(argv[2], "-f") == 0 &&
                strcmp(argv[1], "-a") == 0) {
       NSString *property = [NSString stringWithUTF8String:argv[3]];
-      // Create a dictionary reference for thermal sensors
-      CFDictionaryRef thermalSensors = matching(0xff00, 5);
-      CFArrayRef thermalNames = getProductNames(thermalSensors);
-      CFArrayRef thermalValues = getThermalValues(thermalSensors);
       calcAverageTempByProperty(thermalNames, thermalValues, property);
     } else {
       dumpNames(thermalNames, "C");
