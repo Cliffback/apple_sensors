@@ -31,9 +31,13 @@ Calculate average temperature:
 ```bash
 ./macos-temp-tool -a
 ```
-Filter data by property:
+Filter data by sensors with a name containing "PMU tdev":
 ```bash
 ./macos-temp-tool -f "PMU tdev"
+```
+Calculate average temperature from sensors filtered by "PMU tdev":
+```bash
+./macos-temp-tool -f "PMU tdev -a"
 ```
 Repeat operation with a 5-second interval:
 
