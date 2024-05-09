@@ -41,7 +41,7 @@ Repeat operation with a 5-second interval:
 
 ## Building from Source
 
-Run the following command to compile the code, or use the provided `compile.sh` script.
+Run the following command to compile the code, use the Makefile (run `make`) or use the provided `compile.sh` script.
 ```bash
 clang -Wall -v temp_sensor.m -framework IOKit -framework Foundation -o macos-temp-tool
 ```

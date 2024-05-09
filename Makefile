@@ -7,14 +7,9 @@ SOURCE=temp_sensor.m
 
 CFLAGS=-Wall -v $(SOURCE)
 LDFLAGS=$(LIBRARIES) $(FRAMEWORKS)
-OUT=-o temp_sensor
+OUT=-o macos-temp-tool
 
 build:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OUT)
 
 all: build
-
-run:
-	./temp_sensor | ./monitor.py
-
-.phony: build run
