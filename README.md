@@ -1,5 +1,5 @@
 # Temperature Sensor Tool for Apple Silicon
-This code is based on [temp_sensor.m]([https://github.com/fermion-star/apple_sensors/temp_sensor.m](https://github.com/fermion-star/apple_sensors/blob/master/temp_sensor.m)) by [fermion-star](https://github.com/fermion-star) which was in turn was based on [sensors.m](https://github.com/freedomtan/sensors/blob/master/sensors/sensors.m) by [freedomtan](https://github.com/freedomtan)
+This code is based on [temp_sensor.m](https://github.com/fermion-star/apple_sensors/blob/master/temp_sensor.m) by [fermion-star](https://github.com/fermion-star) which was in turn was based on [sensors.m](https://github.com/freedomtan/sensors/blob/master/sensors/sensors.m) by [freedomtan](https://github.com/freedomtan)
 
 ## Description
 The purpose of this tool is to quickly retrieve temperature information on macOS arm64 / Apple Silicone, either for use in other applications. The output can be modified with arguments for specific readings or average temperatures.
