@@ -387,6 +387,63 @@ void printAverageTemp(CFArrayRef sensorValues) {
   printf("Average value: %0.1lf", average);
 }
 
+void printFilteredHighestTemp(CFArrayRef sensorNames, CFArrayRef sensorValues,
+                              NSString *property) {
+  CFArrayRef filteredNames = filterSensorNamesByProperty(sensorNames, property);
+  long count = CFArrayGetCount(filteredNames);
+
+  double highestTemp = 0.0; // Variable to store the highest temperature
+  NSString *sensorWithHighestTemp = @""; // Variable to store the name of the
+                                         // sensor with the highest temperature
+
+  for (int i = 0; i < count; i++) {
+    NSString *name = (NSString *)CFArrayGetValueAtIndex(filteredNames, i);
+
+    CFIndex index = CFArrayGetFirstIndexOfValue(
+        sensorNames, CFRangeMake(0, CFArrayGetCount(sensorNames)),
+        (__bridge const void *)(name));
+
+    if (index != -1 && index < CFArrayGetCount(sensorValues)) {
+      CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, index);
+      double temp = 0.0;
+      CFNumberGetValue(value, kCFNumberDoubleType, &temp);
+      if (temp > highestTemp) {
+        highestTemp =
+            temp; // Update highest temperature if current temperature is higher
+        sensorWithHighestTemp =
+            name; // Update sensor name with highest temperature
+      }
+    } else {
+      // Handle error or provide default value if name not found in sensorNames
+      printf("Value not found for %s, ", [name UTF8String]);
+    }
+  }
+
+  printf("Highest value of %s: %0.1lf (from sensor: %s)", [property UTF8String],
+         highestTemp, [sensorWithHighestTemp UTF8String]);
+
+  // Release the memory allocated for filteredNames
+  CFRelease(filteredNames);
+}
+
+void printHighestTemp(CFArrayRef sensorValues) {
+  long count = CFArrayGetCount(sensorValues);
+
+  double highestTemp = 0.0; // Variable to store the highest temperature
+
+  for (int i = 0; i < count; i++) {
+    CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, i);
+    double temp = 0.0;
+    CFNumberGetValue(value, kCFNumberDoubleType, &temp);
+    if (temp > highestTemp) {
+      highestTemp =
+          temp; // Update highest temperature if current temperature is higher
+    }
+  }
+
+  printf("Highest value: %0.1lf", highestTemp);
+}
+
 void printThermalPressure() {
   NSProcessInfoThermalState thermalState =
       [[NSProcessInfo processInfo] thermalState];
@@ -420,6 +477,7 @@ int main(int argc, char *argv[]) {
   BOOL repeat = NO;
   BOOL printAsArray = NO;
   BOOL printPressure = NO;
+  BOOL printHighest = NO;
   int repeatInterval = 0; // in microseconds
 
   // Loop through command-line arguments to determine actions
@@ -448,6 +506,8 @@ int main(int argc, char *argv[]) {
       printAsArray = YES;
     } else if (strcmp(argv[i], "-p") == 0) {
       printPressure = YES;
+    } else if (strcmp(argv[i], "-h") == 0) {
+      printHighest = YES;
     } else {
       printf("Error: Invalid argument: %s\n", argv[i]);
       return 1;
@@ -460,15 +520,21 @@ int main(int argc, char *argv[]) {
   CFArrayRef thermalValues = getThermalValues(thermalSensors);
 
   // Check if -array is used with -a, show warning if so
-  if (calculateAverage && printAsArray) {
-    printf("Error: -array cannot be used together with -a\n");
+  if (printAsArray && (calculateAverage || printHighest)) {
+    printf("Error: -array cannot be used together with -a or -h\n");
     return 1;
   }
 
   // Check if printpressure is used with any other argument
   if (printPressure &&
-      (calculateAverage || property || repeat || printAsArray)) {
+      (calculateAverage || property || printAsArray || printHighest)) {
     printf("Error: -p cannot be used with any other argument\n");
+    return 1;
+  }
+
+  // Check if printhighest is used with -a
+  if (printHighest && calculateAverage) {
+    printf("Error: -h cannot be used with -a\n");
     return 1;
   }
 
@@ -481,6 +547,12 @@ int main(int argc, char *argv[]) {
         printFilteredAverageTemp(thermalNames, thermalValues, property);
       } else {
         printAverageTemp(thermalValues);
+      }
+    } else if (printHighest) {
+      if (property) {
+        printFilteredHighestTemp(thermalNames, thermalValues, property);
+      } else {
+        printHighestTemp(thermalValues);
       }
     } else if (property) {
       if (printAsArray) {

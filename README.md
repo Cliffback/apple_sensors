@@ -14,7 +14,9 @@ Run with the following command:
 - `-a`: Calculate average temperature.
 - `-f [property]`: Filter data by property.
 - `-r [interval]`: Repeat the operation with a specified interval.
-- `-arryay`: Print as two arrays, one with names, and one with values instead of a table. Not available with `-a`.
+- `-p`: Print thermal pressure, not compatible with the other arguments.
+- `-h`: Print highest temperature, not compatible with -a or -p or -array.
+- `-array`: Print as two arrays, one with names, and one with values instead of a table. Not available with `-a`.
 
 All arguments can be combined in whatever order.
 
