@@ -379,12 +379,39 @@ void printAverageTemp(CFArrayRef sensorValues) {
   printf("Average value: %0.1lf", average);
 }
 
+void printThermalPressure() {
+  NSProcessInfoThermalState thermalState =
+      [[NSProcessInfo processInfo] thermalState];
+  NSString *stateString;
+
+  switch (thermalState) {
+  case NSProcessInfoThermalStateNominal:
+    stateString = @"Nominal";
+    break;
+  case NSProcessInfoThermalStateFair:
+    stateString = @"Fair";
+    break;
+  case NSProcessInfoThermalStateSerious:
+    stateString = @"Serious";
+    break;
+  case NSProcessInfoThermalStateCritical:
+    stateString = @"Critical";
+    break;
+  default:
+    stateString = @"Unknown";
+    break;
+  }
+
+  printf("Thermal Pressure: %s", [stateString UTF8String]);
+}
+
 int main(int argc, char *argv[]) {
   // Create default values
   NSString *property = nil;
   BOOL calculateAverage = NO;
   BOOL repeat = NO;
   BOOL printAsArray = NO;
+  BOOL printPressure = NO;
   int repeatInterval = 0; // in microseconds
 
   // Loop through command-line arguments to determine actions
@@ -409,9 +436,10 @@ int main(int argc, char *argv[]) {
         printf("Error: Missing argument for -r\n");
         return 1;
       }
-    } else if (strcmp(argv[i], "-array") ==
-               0) { // New argument for printing as an array
+    } else if (strcmp(argv[i], "-array") == 0) {
       printAsArray = YES;
+    } else if (strcmp(argv[i], "-p") == 0) {
+      printPressure = YES;
     } else {
       printf("Error: Invalid argument: %s\n", argv[i]);
       return 1;
@@ -431,7 +459,9 @@ int main(int argc, char *argv[]) {
 
   // Main loop to perform actions
   do {
-    if (calculateAverage) {
+    if (printPressure) {
+      printThermalPressure();
+    } else if (calculateAverage) {
       if (property) {
         printFilteredAverageTemp(thermalNames, thermalValues, property);
       } else {
