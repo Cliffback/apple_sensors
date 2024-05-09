@@ -465,6 +465,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  // Check if printpressure is used with any other argument
+  if (printPressure &&
+      (calculateAverage || property || repeat || printAsArray)) {
+    printf("Error: -p cannot be used with any other argument\n");
+    return 1;
+  }
+
   // Main loop to perform actions
   do {
     if (printPressure) {
