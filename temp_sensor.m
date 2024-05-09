@@ -296,7 +296,11 @@ void printValues(CFArrayRef sensorNames, CFArrayRef sensorValues) {
     CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, i);
     double temp = 0.0;
     CFNumberGetValue(value, kCFNumberDoubleType, &temp);
-    printf("%0.1lf\n", temp);
+    printf("%0.1lf", temp);
+    // Print newline if not the last line
+    if (i < count - 1) {
+      printf("\n");
+    }
   }
 }
 
@@ -318,7 +322,11 @@ void printFilteredValues(CFArrayRef sensorNames, CFArrayRef sensorValues,
       CFNumberRef value = CFArrayGetValueAtIndex(sensorValues, index);
       double temp = 0.0;
       CFNumberGetValue(value, kCFNumberDoubleType, &temp);
-      printf("%0.1lf\n", temp);
+      printf("%0.1lf", temp);
+      // Print newline if not the last line
+      if (i < count - 1) {
+        printf("\n");
+      }
     } else {
       // Handle error or provide default value if name not found in sensorNames
       printf("Value not found, ");
