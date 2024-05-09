@@ -168,6 +168,7 @@ CFArrayRef getThermalValues(CFDictionaryRef sensors) {
     }
     CFArrayAppendValue(array, value);
   }
+  CFRelease(matchingsrvs);
   return array;
 }
 
@@ -235,14 +236,7 @@ CFArrayRef filterSensorNamesByProperty(CFArrayRef sensorNames,
       CFArrayAppendValue(filteredNames, name);
     }
   }
-
-  // Return a non-mutable copy to adhere to memory management conventions
-  CFArrayRef immutableFilteredNames =
-      CFArrayCreateCopy(kCFAllocatorDefault, filteredNames);
-
-  // Release the memory allocated for filteredNames
-  CFRelease(filteredNames);
-  return immutableFilteredNames;
+  return filteredNames;
 }
 
 void printValuesAsArray(CFArrayRef sensorNames, CFArrayRef sensorValues) {
@@ -279,10 +273,8 @@ void printFilteredValuesAsArrays(CFArrayRef sensorNames,
   dumpNames(filteredNames, "C");
   dumpValues(filteredValues);
 
-  // Release the memory allocated for the filtered values array
+  // Release the memory allocated
   CFRelease(filteredValues);
-
-  // Release the memory allocated for filteredNames
   CFRelease(filteredNames);
 }
 
@@ -333,7 +325,7 @@ void printFilteredValues(CFArrayRef sensorNames, CFArrayRef sensorValues,
     }
   }
 
-  // Release the memory allocated for filteredNames
+  // Release the memory allocated
   CFRelease(filteredNames);
 }
 
