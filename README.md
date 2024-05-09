@@ -23,6 +23,10 @@ Run with the following command:
 All arguments can be combined in whatever order.
 
 ### Example Usage
+Get thermal pressure
+```bash
+./macos-temp-tool -p
+```
 Calculate average temperature:
 ```bash
 ./macos-temp-tool -a
