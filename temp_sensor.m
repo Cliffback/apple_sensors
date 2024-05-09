@@ -470,6 +470,65 @@ void printThermalPressure() {
   printf("Thermal Pressure: %s", [stateString UTF8String]);
 }
 
+void printHelp() {
+  printf("Usage: macos-temp-tool [options]\n");
+  printf("Options:\n");
+  printf("  -a                    Calculate average temperature.\n");
+  printf("  -f [property]         Filter data by property.\n");
+  printf("  -r [interval]         Repeat the operation with a specified "
+         "interval.\n");
+  printf("  -p                    Print thermal pressure, not compatible with "
+         "the other arguments.\n");
+  printf("  -m                    Print the highest temperature, not "
+         "compatible with -a, -p, or -array.\n");
+  printf("  -array                Print as two arrays, one with names, and one "
+         "with values instead of a table. Not available with -a.\n");
+  printf("  -h                    Print this help message.\n");
+  printf("  -l                    Print the license.\n");
+}
+
+void printLicense() {
+  printf("BSD 3-Clause License\n\n");
+  printf("Copyright (c) 2016-2018, \"freedom\" Koan-Sin Tan\n");
+  printf("All rights reserved.\n\n");
+  printf(
+      "Redistribution and use in source and binary forms, with or without\n");
+  printf("modification, are permitted provided that the following conditions "
+         "are met:\n\n");
+  printf("* Redistributions of source code must retain the above copyright "
+         "notice, this\n");
+  printf("  list of conditions and the following disclaimer.\n\n");
+  printf("* Redistributions in binary form must reproduce the above copyright "
+         "notice,\n");
+  printf("  this list of conditions and the following disclaimer in the "
+         "documentation\n");
+  printf("  and/or other materials provided with the distribution.\n\n");
+  printf("* Neither the name of the copyright holder nor the names of its\n");
+  printf("  contributors may be used to endorse or promote products derived "
+         "from\n");
+  printf("  this software without specific prior written permission.\n\n");
+  printf("THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "
+         "\"AS IS\"\n");
+  printf("AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED "
+         "TO, THE\n");
+  printf("IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR "
+         "PURPOSE ARE\n");
+  printf("DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS "
+         "BE LIABLE\n");
+  printf("FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR "
+         "CONSEQUENTIAL\n");
+  printf("DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE "
+         "GOODS OR\n");
+  printf("SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) "
+         "HOWEVER\n");
+  printf("CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT "
+         "LIABILITY,\n");
+  printf("OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT "
+         "OF THE USE\n");
+  printf(
+      "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n");
+}
+
 int main(int argc, char *argv[]) {
   // Create default values
   NSString *property = nil;
@@ -478,6 +537,8 @@ int main(int argc, char *argv[]) {
   BOOL printAsArray = NO;
   BOOL printPressure = NO;
   BOOL printHighest = NO;
+  BOOL printHelpFlag = NO;
+  BOOL printLicenseFlag = NO;
   int repeatInterval = 0; // in microseconds
 
   // Loop through command-line arguments to determine actions
@@ -506,8 +567,12 @@ int main(int argc, char *argv[]) {
       printAsArray = YES;
     } else if (strcmp(argv[i], "-p") == 0) {
       printPressure = YES;
-    } else if (strcmp(argv[i], "-h") == 0) {
+    } else if (strcmp(argv[i], "-m") == 0) {
       printHighest = YES;
+    } else if (strcmp(argv[i], "-h") == 0) {
+      printHelpFlag = YES;
+    } else if (strcmp(argv[i], "-l") == 0) {
+      printLicenseFlag = YES;
     } else {
       printf("Error: Invalid argument: %s\n", argv[i]);
       return 1;
@@ -532,16 +597,32 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  if (printHelpFlag && (calculateAverage || property || printAsArray ||
+                        printHighest || printPressure || repeat)) {
+    printf("Error: -h cannot be used with any other argument\n");
+    return 1;
+  }
+
+  if (printHelpFlag && (calculateAverage || property || printAsArray ||
+                        printHighest || printPressure || repeat)) {
+    printf("Error: -l cannot be used with any other argument\n");
+    return 1;
+  }
+
   // Check if printhighest is used with -a
   if (printHighest && calculateAverage) {
-    printf("Error: -h cannot be used with -a\n");
+    printf("Error: -m cannot be used with -a\n");
     return 1;
   }
 
   // Main loop to perform actions
   do {
-    if (printPressure) {
+    if (printHelpFlag) {
+      printHelp();
+    } else if (printPressure) {
       printThermalPressure();
+    } else if (printLicenseFlag) {
+      printLicense();
     } else if (calculateAverage) {
       if (property) {
         printFilteredAverageTemp(thermalNames, thermalValues, property);
